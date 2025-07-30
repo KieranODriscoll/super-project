@@ -39,7 +39,8 @@ const LoginPage = () => {
       // Log success
       console.log('Login successful:', response.data)
 
-      alert('Login successful!')
+      // Redirect to home page
+      navigate('/')
 
     } catch (err: any) {
       console.error('Login error:', err)
