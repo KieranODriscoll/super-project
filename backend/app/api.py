@@ -13,10 +13,12 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Get CORS origins from environment variable
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

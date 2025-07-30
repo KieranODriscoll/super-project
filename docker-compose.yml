@@ -34,7 +34,7 @@ services:
       DB_USER: postgres
       DB_PASSWORD: password123!
       SECRET_KEY: your-secret-key-change-in-production
-      CORS_ORIGINS: http://localhost:3000,http://frontend:3000,http://localhost:7000
+      CORS_ORIGINS: http://localhost:3000,http://frontend:3000,http://localhost:7000,http://192.168.10.46:3000,http://192.168.10.46:7000
     ports:
       - "7000:7000"
     volumes:
@@ -62,7 +62,7 @@ services:
     container_name: react_frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:8001
+      VITE_API_URL: http://192.168.10.46:7000
     ports:
       - "3000:3000"
     volumes:
