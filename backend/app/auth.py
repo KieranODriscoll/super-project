@@ -5,7 +5,9 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from .models import TokenData
+from .models import TokenData, UserDB
+from sqlalchemy.orm import Session
+from .database import get_db
 
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")  # In production, use environment variable
@@ -51,25 +53,39 @@ def verify_token(token: str) -> TokenData:
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
+        
+        expire = payload.get("exp")
+        if expire is None:
+            raise credentials_exception
+        
         token_data = TokenData(email=email)
         return token_data
-    except JWTError:
+    except JWTError as e:
+        if "expired" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         raise credentials_exception
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
     """Get the current user from the JWT token."""
     token = credentials.credentials
     token_data = verify_token(token)
     
-    # Here you would typically fetch the user from your database
-    # For now, we'll return a mock user
     if token_data.email is None:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
-    # Mock user - replace with actual database query
-    user = {
-        "id": 1,
-        "email": token_data.email,
-        "is_active": True
-    }
+    user = db.query(UserDB).filter(UserDB.email == token_data.email).first()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Inactive user"
+        )
+
     return user
