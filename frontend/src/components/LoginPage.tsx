@@ -106,7 +106,7 @@ const LoginPage = () => {
       if (err.response?.status === 401) {
         setError('Invalid email or password')
       } else if (err.response?.data?.detail) {
-        setError(err.response.data.detail)
+        setError("An error has occurred. Please try again.")
       } else {
         setError('Login failed. Please try again.')
       }

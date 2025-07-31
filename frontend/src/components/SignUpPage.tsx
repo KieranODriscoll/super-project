@@ -135,7 +135,7 @@ const SignUpPage = () => {
           setError(err.response.data?.detail || 'Invalid registration data')
         }
       } else if (err.response?.data?.detail) {
-        setError(err.response.data.detail)
+        setError("Any error has occured, please try again")
       } else {
         setError('Registration failed. Please try again.')
       }
