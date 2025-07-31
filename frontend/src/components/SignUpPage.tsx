@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import './SignUpPage.css'
 
 const SignUpPage = () => {
@@ -9,6 +10,8 @@ const SignUpPage = () => {
     password: '',
     confirmPassword: ''
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -16,13 +19,66 @@ const SignUpPage = () => {
       ...prev,
       [name]: value
     }))
+    if (error) setError('')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return false
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      return false
+    }
+
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // No functionality as requested - just log the form data
-    console.log('Sign up attempt:', formData)
-    alert('Sign up functionality not implemented')
+
+    if (!validateForm()) {
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:7000'
+      const response = await axios.post(`${apiUrl}/auth/register`, {
+        email: formData.email,
+        password: formData.password
+      })
+
+      // Store the token in localStorage
+      localStorage.setItem('access_token', response.data.access_token)
+
+      // Log success
+      console.log('Signup successful:', response.data)
+
+      // Redirect to home page
+      navigate('/')
+
+    } catch (err: any) {
+      console.error('Signup error:', err)
+
+      if (err.response?.status === 400) {
+        if (err.response.data?.detail === 'Email already registered') {
+          setError('An account with this email already exists')
+        } else {
+          setError(err.response.data?.detail || 'Invalid registration data')
+        }
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail)
+      } else {
+        setError('Registration failed. Please try again.')
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -34,6 +90,12 @@ const SignUpPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="signup-form">
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -44,6 +106,7 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               placeholder="Enter your email"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -57,6 +120,8 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               placeholder="Enter your password"
               required
+              disabled={isLoading}
+              minLength={6}
             />
           </div>
 
@@ -70,11 +135,17 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               placeholder="Confirm your password"
               required
+              disabled={isLoading}
+              minLength={6}
             />
           </div>
 
-          <button type="submit" className="signup-button">
-            Create Account
+          <button
+            type="submit"
+            className="signup-button"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
