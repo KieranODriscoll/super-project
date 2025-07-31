@@ -7,6 +7,7 @@ from typing import List, Tuple
 # This script is used to seed the database with users
 # This should be run after init.sql is run
 #
+# Hash passwords with salt using bcrypt
 ###
 
 def hash_password(password: str) -> str:
@@ -16,6 +17,9 @@ def hash_password(password: str) -> str:
     hashed_password = bcrypt.hashpw(password_bytes, salt)
     return hashed_password.decode("utf-8")
 
+###
+# Sample data for the users table. Used when registration function is not implemented
+###
 def seed_users() -> List[Tuple[str, str]]:
     return [
         ("admin@test.com", "admin"),
@@ -24,6 +28,11 @@ def seed_users() -> List[Tuple[str, str]]:
     ]
 
 
+###
+# Function to seed the database with users
+# Takes the sample data and hashes the passwords
+# Inserts the users into the datbase and commits the transaction
+###
 def main():
     # Database connection
     db_params = {

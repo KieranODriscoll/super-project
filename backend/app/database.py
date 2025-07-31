@@ -3,21 +3,37 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
+###
+# Creates a SQLAlchemy ORM to interact with the PostgrSQL database
+###
+
 # Database URL from environment variable
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is required")
 
-# Create SQLAlchemy engine
+###
+# Creates a database engine that manages connections to the database
+###
 engine = create_engine(DATABASE_URL)
 
-# Create SessionLocal class
+###
+# Creates a factory for database sessions which handles database transactions
+# autocommit=False: The session will not automatically commit transactions
+# autoflush=False: The session will not automatically flush changes to the database
+# bind=engine: The session will use the engine to connect to the database
+###
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create Base class
+###
+# Creates the base for all SQLAlchemy models to inherit fromt
+# Provides the found dation for Object Relational Mapping
+###
 Base = declarative_base()
 
-# Dependency to get database session
+###
+# Helper function to get a database session for use in the API endpoints
+###
 def get_db():
     db = SessionLocal()
     try:
