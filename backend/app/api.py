@@ -38,8 +38,15 @@ async def read_user_me(current_user = Depends(get_current_user)):
 
 @app.post("/auth/login")
 async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
-
-    user = db.query(UserDB).filter(UserDB.email == user_credentials.email).first()
+    # Input validation - ensure email is properly formatted
+    if not user_credentials.email or not user_credentials.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email and password are required"
+        )
+    
+    # Use case-insensitive email comparison for better security
+    user = db.query(UserDB).filter(UserDB.email.ilike(user_credentials.email)).first()
 
     if not user or not verify_password(user_credentials.password, user.password):
         raise HTTPException(
@@ -78,7 +85,22 @@ async def logout_get(current_user: UserDB = Depends(get_current_user), db: Sessi
 
 @app.post("/auth/register")
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    existing_user = db.query(UserDB).filter(UserDB.email == user_data.email).first()
+    # Input validation
+    if not user_data.email or not user_data.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email and password are required"
+        )
+    
+    # Password strength validation
+    if len(user_data.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long"
+        )
+    
+    # Check for existing user (case-insensitive)
+    existing_user = db.query(UserDB).filter(UserDB.email.ilike(user_data.email)).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

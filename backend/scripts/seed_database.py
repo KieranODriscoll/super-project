@@ -30,9 +30,11 @@ def main():
         'host': os.getenv("DB_HOST", "localhost"),
         'database': os.getenv("DB_NAME", "myapp"),
         'user': os.getenv("DB_USER", "postgres"),
-        'password': os.getenv("DB_PASSWORD", "password123!"),
+        'password': os.getenv("DB_PASSWORD"),
     }
-
+    
+    if not db_params['password']:
+        raise ValueError("DB_PASSWORD environment variable is required")
     try:
         conn = psycopg2.connect(**db_params)
         cur = conn.cursor()

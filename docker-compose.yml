@@ -6,9 +6,9 @@ services:
     container_name: postgres_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: myapp
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123!
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -28,13 +28,13 @@ services:
     container_name: fastapi_backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://postgres:password123!@db:5432/myapp
-      DB_HOST: db
-      DB_NAME: myapp
-      DB_USER: postgres
-      DB_PASSWORD: password123!
-      SECRET_KEY: your-secret-key-change-in-production
-      CORS_ORIGINS: http://localhost:3000,http://frontend:3000,http://localhost:7000,http://192.168.10.46:3000,http://192.168.10.46:7000,http://app.kodriscoll.xyz,http://app.kodriscoll.xyz:3000,http://app.kodriscoll.xyz:7000,https://app.kodriscoll.xyz,https://app.kodriscoll.xyz:3000,https://app.kodriscoll.xyz:7000
+      DATABASE_URL: ${DATABASE_URL}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS}
     ports:
       - "7000:7000"
     volumes:
@@ -62,7 +62,7 @@ services:
     container_name: react_frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: https://api.kodriscoll.xyz
+      VITE_API_URL: ${VITE_API_URL}
     ports:
       - "3000:3000"
     volumes:
